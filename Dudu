@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bubu, Be My Valentine 💖</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background: #ffe6f0;
+      color: #d6336c;
+      padding: 50px;
+      overflow: hidden;
+      position: relative;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 30px;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.2s, left 0.2s, top 0.2s;
+    }
+    .yes-btn {
+      background-color: #ff4da6;
+      color: white;
+    }
+    .no-btn {
+      background-color: #fff;
+      color: #d6336c;
+      border: 2px solid #d6336c;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bubu, will you be my Valentine? 💌</h1>
+  <button class="yes-btn" onclick="yesClicked()">Yes</button>
+  <button class="no-btn" id="noBtn">No</button>
+
+  <canvas id="confetti"></canvas>
+  <canvas id="hearts"></canvas>
+
+  <script>
+    const noBtn = document.getElementById('noBtn');
+    let noClickCount = 0;
+
+    // YES button clicked
+    function yesClicked() {
+      document.body.innerHTML = `
+        <h1>Yay, Bubu! 💖 You made me the happiest!</h1>
+        <p>Happy Valentine's Day, my love! 😘</p>
+        <canvas id="confetti"></canvas>
+        <canvas id="hearts"></canvas>
+      `;
+      startConfetti();
+      startHearts();
+    }
+
+    // Move NO button randomly
+    function moveNoButton() {
+      const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 20);
+      const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 20);
+      noBtn.style.position = 'absolute';
+      noBtn.style.left = x + 'px';
+      noBtn.style.top = y + 'px';
+    }
+
+    noBtn.addEventListener('mouseenter', () => moveNoButton());
+
+    noBtn.addEventListener('click', () => {
+      noClickCount++;
+      if (noClickCount === 1) {
+        alert("Are you sure, Bubu? 💕");
+      } else if (noClickCount === 2) {
+        alert("Seriously? 😢");
+      } else {
+        alert("Oops... looks like you can't say no! 😘");
+      }
+    });
+
+    // CONFETTI
+    function startConfetti() {
+      const canvas = document.getElementById('confetti');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const confettiCount = 150;
+      const confetti = [];
+
+      for (let i = 0; i < confettiCount; i++) {
+        confetti.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * confettiCount,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          tilt: Math.random() * 10 - 10,
+          tiltAngleIncremental: Math.random() * 0.07 + 0.05,
+          tiltAngle: 0
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confetti.forEach(c => {
+          ctx.beginPath();
+          ctx.lineWidth = c.r / 2;
+          ctx.strokeStyle = c.color;
+          ctx.moveTo(c.x + c.tilt + c.r / 4, c.y);
+          ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r / 4);
+          ctx.stroke();
+        });
+        update();
+      }
+
+      function update() {
+        confetti.forEach((c, i) => {
+          c.tiltAngle += c.tiltAngleIncremental;
+          c.y += (Math.cos(c.d) + 3 + c.r / 2) / 2;
+          c.tilt = Math.sin(c.tiltAngle) * 15;
+          if (c.y > canvas.height) {
+            confetti[i] = { ...c, y: -10, x: Math.random() * canvas.width };
+          }
+        });
+      }
+
+      function animate() {
+        draw();
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    // FLOATING HEARTS
+    function startHearts() {
+      const canvas = document.getElementById('hearts');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const hearts = [];
+      const heartCount = 50;
+
+      function randomHeart() {
+        return {
+          x: Math.random() * canvas.width,
+          y: canvas.height + Math.random() * canvas.height,
+          size: Math.random() * 20 + 10,
+          speed: Math.random() * 2 + 1,
+          opacity: Math.random() * 0.5 + 0.5,
+          angle: Math.random() * 2 * Math.PI
+        };
+      }
+
+      for (let i = 0; i < heartCount; i++) hearts.push(randomHeart());
+
+      function drawHeart(x, y, size, opacity) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.translate(x, y);
+        ctx.scale(size / 20, size / 20);
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-10, -10, -10, -25, 0, -25);
+        ctx.bezierCurveTo(10, -25, 10, -10, 0, 0);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255, 0, 102, ${opacity})`;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hearts.forEach(h => {
+          h.y -= h.speed;
+          h.x += Math.sin(h.angle) * 1;
+          h.angle += 0.01;
+          if (h.y < -30) {
+            Object.assign(h, randomHeart());
+            h.y = canvas.height + 10;
+          }
+          drawHeart(h.x, h.y, h.size, h.opacity);
+        });
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+  </script>
+</body>
+</html>
